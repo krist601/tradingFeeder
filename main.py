@@ -1,10 +1,12 @@
 import http.client
 from pymongo import  MongoClient
+import sys
+import time
 
 ######### INPUTS #########
 
-symbol = "MSFT"
-classification = "TECH"
+symbol = sys.argv[1]
+classification = sys.argv[2]
 
 ######### API CONNECTION CONFIGURATION #########
 
@@ -21,30 +23,38 @@ client = MongoClient('localhost')
 db = client['tradingFeeder']
 col = db['StockPrice']
 
-######### REQUEST #########
+######### YEAR-MONTH LOOP #########
 
-conn.request("GET", "/query?interval=5min&function=TIME_SERIES_INTRADAY_EXTENDED&symbol=MSFT&datatype=json&output_size=compact&slice=year1month1", headers=headers)
-res = conn.getresponse()
-dataString = res.read().decode("utf-8")
+for year in ["1", "2"]:
+    for month in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]:
 
-######### INSERT INTO DATABASE #########
+        ######### REQUEST #########
 
-col.delete_many({})
-for line in dataString.splitlines()[1:] :
-    dataSlipted = line.split(sep=",")
-    col.insert_one({
-        "symbol": symbol,
-        "classification": classification,
-        "date": dataSlipted[0],
-        "open": dataSlipted[1],
-        "high": dataSlipted[2],
-        "low": dataSlipted[3],
-        "close": dataSlipted[4],
-        "volume": dataSlipted[5]
-    })
+        conn.request("GET", "/query?interval=5min&function=TIME_SERIES_INTRADAY_EXTENDED&symbol="+symbol+"&datatype=json&output_size=compact&slice=year"+year+"month"+month, headers=headers)
+        res = conn.getresponse()
+        dataString = res.read().decode("utf-8")
+
+        ######### INSERT INTO DATABASE #########
+
+        for line in dataString.splitlines()[1:10] :
+            dataSlipted = line.split(sep=",")
+            col.insert_one({
+                "symbol": symbol,
+                "classification": classification,
+                "date": dataSlipted[0],
+                "open": dataSlipted[1],
+                "high": dataSlipted[2],
+                "low": dataSlipted[3],
+                "close": dataSlipted[4],
+                "volume": dataSlipted[5]
+            })
+        
+        print("DONE: "+symbol+" year " + year + " - month " + month)
+        time.sleep(15)
     
-print(client.list_database_names())
-print(db.list_collection_names())
+print("DATABASE INSERTIONS DONE")
+#print(client.list_database_names())
+#print(db.list_collection_names())
 cursor = col.find({})
 for document in cursor:
     print(document)
