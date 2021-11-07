@@ -36,7 +36,7 @@ for year in ["1", "2"]:
 
         ######### INSERT INTO DATABASE #########
 
-        for line in dataString.splitlines()[1:10] :
+        for line in dataString.splitlines()[1:] :
             dataSlipted = line.split(sep=",")
             col.insert_one({
                 "symbol": symbol,
@@ -51,10 +51,5 @@ for year in ["1", "2"]:
         
         print("DONE: "+symbol+" year " + year + " - month " + month)
         time.sleep(15)
-    
+   
 print("DATABASE INSERTIONS DONE")
-#print(client.list_database_names())
-#print(db.list_collection_names())
-cursor = col.find({})
-for document in cursor:
-    print(document)
