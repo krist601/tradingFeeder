@@ -51,5 +51,5 @@ for year in ["1", "2"]:
         
         print("DONE: "+symbol+" year " + year + " - month " + month)
         time.sleep(15)
-    
+   
 print("DATABASE INSERTIONS DONE")
